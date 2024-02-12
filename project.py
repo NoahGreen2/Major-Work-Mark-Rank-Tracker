@@ -5,67 +5,83 @@ import pandas as pd
 # Create main customtkinter window
 win = ctk.CTk()
 win.title("Main Menu")
-win.geometry("500x500")
+win.geometry("300x500")
 
 df = pd.read_csv('project.csv')
 subjects = df['Subject'].tolist()
 subj_buttons = []
 
+#Function to save changes to the dataframe
+def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win):
+    index = subjects.index(subject)
+    for i in range(4):
+        df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")
+        df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")
+        df.iloc[index, i*4+2] = mark_textboxes_outof[i].get("1.0", "end-1c")
+        df.iloc[index, i*4+4] = rank_textboxes_outof[i].get("1.0", "end-1c")
+
+    df.to_csv('project.csv', index=False)
+    edit_win.destroy()
+
+#Function to open an edit window
+def open_edit_window(subject, toplevel):
+    index = subjects.index(subject)
+    edit_win = ctk.CTkToplevel(toplevel)
+    edit_win.title(str(subject) + ' Marks/Ranks')
+    edit_win.geometry("350x400")
+
+    mark_textboxes = []
+    mark_textboxes_outof = []
+    rank_textboxes = []
+    rank_textboxes_outof = []
+
+    for i in range(4):
+        ctk.CTkLabel(edit_win, text='Task ' + str(i+1)).place(x=10,y=10+80*i)
+        ctk.CTkLabel(edit_win, text='Mark').place(x=75,y=10+80*i)
+        ctk.CTkLabel(edit_win, text='Rank').place(x=75,y=50+80*i)
+        ctk.CTkLabel(edit_win, text='Out Of').place(x=200,y=10+80*i)
+        ctk.CTkLabel(edit_win, text='Out Of').place(x=200,y=50+80*i)
+
+        mark_textbox = ctk.CTkTextbox(edit_win, height=1, width=50)
+        mark_textbox.place(x=125,y=10+80*i)
+        mark_textbox.insert(END, df.iloc[index, i*4+1])
+        mark_textboxes.append(mark_textbox)
+
+        mark_textbox_outof = ctk.CTkTextbox(edit_win, height=1, width=50)
+        mark_textbox_outof.place(x=250,y=10+80*i)
+        mark_textbox_outof.insert(END, df.iloc[index, i*4+2])
+        mark_textboxes_outof.append(mark_textbox_outof)
+
+        rank_textbox = ctk.CTkTextbox(edit_win, height=1, width=50)
+        rank_textbox.place(x=125,y=50+80*i)
+        rank_textbox.insert(END, df.iloc[index, i*4+3])
+        rank_textboxes.append(rank_textbox)
+
+        rank_textbox_outof = ctk.CTkTextbox(edit_win, height=1, width=50)
+        rank_textbox_outof.place(x=250,y=50+80*i)
+        rank_textbox_outof.insert(END, df.iloc[index, i*4+4])
+        rank_textboxes_outof.append(rank_textbox_outof)
+
+    # Create a button to save the changes
+    save_button = ctk.CTkButton(edit_win, text='Save Changes', command= lambda: save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win))
+    save_button.place(x=125,y=320)
+    
+
 #Function to open a subject homepage
 def open_subject(index):
     subject = subjects[index]
 
-    mark_1 = df['Mark 1'][index]
-    rank_1 = df['Rank 1'][index]
-
-    mark_2 = df['Mark 2'][index]
-    rank_2 = df['Rank 2'][index]
-
-    mark_3 = df['Mark 3'][index]
-    rank_3 = df['Rank 3'][index]
-
-    mark_4 = df['Mark 4'][index]
-    rank_4 = df['Rank 4'][index]
-
     toplevel = ctk.CTkToplevel(win)
     toplevel.title(subject)
-    toplevel.geometry("500x500")
+    toplevel.geometry("300x300")
 
-    tabview = ctk.CTkTabview(toplevel)
-    tabview.pack(padx=20, pady=20)
-    tabview.add("Assessment 1")
-    tabview.add("Assessment 2")
-    tabview.add("Assessment 3")
-    tabview.add("Assessment 4")
-    
-    lower_tab_1 = ctk.CTkTabview(tabview.tab("Assessment 1"))
-    lower_tab_1.pack(padx=20, pady=20)
-    ass1_m = lower_tab_1.add("Mark")
-    ass1_r = lower_tab_1.add("Rank")
+    ctk.CTkLabel(toplevel, text=subject, font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
 
-    lower_tab_2 = ctk.CTkTabview(tabview.tab("Assessment 2"))
-    lower_tab_2.pack(padx=20, pady=20)
-    ass2_m = lower_tab_2.add("Mark")
-    ass2_r = lower_tab_2.add("Rank")
+    edit_button = ctk.CTkButton(toplevel, text='Edit Marks/Ranks', command= lambda subject=subject: open_edit_window(subject, toplevel))
+    edit_button.pack(pady=10)
 
-    lower_tab_3 = ctk.CTkTabview(tabview.tab("Assessment 3"))
-    lower_tab_3.pack(padx=20, pady=20)
-    ass3_m = lower_tab_3.add("Mark")
-    ass3_r = lower_tab_3.add("Rank")
-
-    lower_tab_4 = ctk.CTkTabview(tabview.tab("Assessment 4"))
-    lower_tab_4.pack(padx=20, pady=20)
-    ass4_m = lower_tab_4.add("Mark")
-    ass4_r = lower_tab_4.add("Rank")
-
-    ctk.CTkLabel(ass1_m, text=str("Mark=" + str(mark_1))).pack(pady=10)
-    ctk.CTkLabel(ass1_r, text=str("Rank=" + str(rank_1))).pack(pady=10)
-    ctk.CTkLabel(ass2_m, text=str("Mark=" + str(mark_2))).pack(pady=10)
-    ctk.CTkLabel(ass2_r, text=str("Rank=" + str(rank_2))).pack(pady=10)
-    ctk.CTkLabel(ass3_m, text=str("Mark=" + str(mark_3))).pack(pady=10)
-    ctk.CTkLabel(ass3_r, text=str("Rank=" + str(rank_3))).pack(pady=10)
-    ctk.CTkLabel(ass4_m, text=str("Mark=" + str(mark_4))).pack(pady=10)
-    ctk.CTkLabel(ass4_r, text=str("Rank=" + str(rank_4))).pack(pady=10)
+    close_button = ctk.CTkButton(toplevel, text='Close', command= toplevel.destroy)
+    close_button.pack(pady=10)
 
 
 # Create a button for each existing subject
