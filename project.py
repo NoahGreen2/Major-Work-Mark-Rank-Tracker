@@ -5,21 +5,37 @@ import pandas as pd
 # Create main customtkinter window
 win = ctk.CTk()
 win.title("Main Menu")
-win.geometry("200x300")
+win.geometry("500x500")
 
 df = pd.read_csv('project.csv')
 subjects = df['Subject'].tolist()
+subj_buttons = []
 
-def print_name(index):
-    subjects = df['Subject'].tolist()
-    print(subjects[index])
+#Function to open a subject homepage
+def open_subject(index):
+    mark = df['Mark'][index]
+    subject = subjects[index]
+
+    toplevel = ctk.CTkToplevel(win)
+    toplevel.title(subject)
+    toplevel.geometry("500x500")
+
+    win.withdraw()
+
+    tabview = ctk.CTkTabview(toplevel)
+    tabview.pack(padx=20, pady=20)
+    tabview.add("Assessment 1")
+    tabview.add("Assessment 2")
+
+    ctk.CTkLabel(tabview.tab("Assessment 1"), text=str("Mark=" + mark)).pack(pady=10)
+
+    ctk.CTkLabel(toplevel, text=subject).pack(pady=10)
 
 # Create a button for each existing subject
-for subject in subjects:
-    ctk.CTkButton(win, text=subject, command=lambda: print_name(subjects.index(subject))).pack(pady=10)
+index = 0
 
-# Create button to add a subject
-add_subject = ctk.CTkButton(win, text="Add a subject", command=lambda: add_subject())
-add_subject.pack(pady=10)
+for subject in subjects:
+    subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
+    index += 1
 
 win.mainloop()
