@@ -1,0 +1,10 @@
+Idea is to have a user-inputted database of previous assessment marks and ranks for certain tasks at school
+Users can check using graphs whether they are improving in both marks and/or ranks
+Potential cohort tracker? Dont know how to calculate this
+
+Can add goals perhaps and see whether or not can meet them
+Averages
+
+Use customtkinter for nice look
+Use matplotlib for graphing
+Create and edit some kind of file to store information
