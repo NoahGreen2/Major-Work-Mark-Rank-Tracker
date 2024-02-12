@@ -7,12 +7,13 @@ win = ctk.CTk()
 win.title("Main Menu")
 win.geometry("300x500")
 
+#Read the csv file
 df = pd.read_csv('project.csv')
 subjects = df['Subject'].tolist()
 subj_buttons = []
 
 #Function to save changes to the dataframe
-def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win):
+def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel):
     index = subjects.index(subject)
     for i in range(4):
         df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")
@@ -22,6 +23,7 @@ def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, 
 
     df.to_csv('project.csv', index=False)
     edit_win.destroy()
+    toplevel.deiconify()
 
 #Function to open an edit window
 def open_edit_window(subject, toplevel):
@@ -29,6 +31,8 @@ def open_edit_window(subject, toplevel):
     edit_win = ctk.CTkToplevel(toplevel)
     edit_win.title(str(subject) + ' Marks/Ranks')
     edit_win.geometry("350x400")
+
+    toplevel.withdraw()
 
     mark_textboxes = []
     mark_textboxes_outof = []
@@ -63,9 +67,14 @@ def open_edit_window(subject, toplevel):
         rank_textboxes_outof.append(rank_textbox_outof)
 
     # Create a button to save the changes
-    save_button = ctk.CTkButton(edit_win, text='Save Changes', command= lambda: save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win))
+    save_button = ctk.CTkButton(edit_win, text='Save Changes', command= lambda: save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel))
     save_button.place(x=125,y=320)
-    
+
+#Function to close a toplevel and restore main window
+def close_window(toplevel, win):
+    toplevel.destroy()
+    win.deiconify()
+
 
 #Function to open a subject homepage
 def open_subject(index):
@@ -75,18 +84,18 @@ def open_subject(index):
     toplevel.title(subject)
     toplevel.geometry("300x300")
 
+    win.withdraw()
+
     ctk.CTkLabel(toplevel, text=subject, font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
 
     edit_button = ctk.CTkButton(toplevel, text='Edit Marks/Ranks', command= lambda subject=subject: open_edit_window(subject, toplevel))
     edit_button.pack(pady=10)
 
-    close_button = ctk.CTkButton(toplevel, text='Close', command= toplevel.destroy)
+    close_button = ctk.CTkButton(toplevel, text='Close', command= lambda toplevel=toplevel: close_window(toplevel, win))
     close_button.pack(pady=10)
-
 
 # Create a button for each existing subject
 index = 0
-
 for subject in subjects:
     subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
     index += 1
