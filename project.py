@@ -68,7 +68,7 @@ def open_edit_window(subject, toplevel):
 
     # Create a button to save the changes
     save_button = ctk.CTkButton(edit_win, text='Save Changes', command= lambda: save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel))
-    save_button.place(x=125,y=320)
+    save_button.place(x=125,y=350)
 
 #Function to close a toplevel and restore main window
 def close_window(toplevel, win):
@@ -99,5 +99,32 @@ index = 0
 for subject in subjects:
     subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
     index += 1
+
+#Function to save a new subject
+def save_subject(new_subject, add_win, df):
+    add_win.destroy()
+    data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none']
+    newDF = pd.DataFrame(columns=data)
+    
+    df.to_csv('data.csv', index=False)
+    win.deiconify()
+
+#Function to add a new subject
+def add_subject(df):
+    add_win = ctk.CTkToplevel(win)
+    add_win.title('Add New Subject')
+    add_win.geometry("300x300")
+
+    win.withdraw()
+
+    ctk.CTkLabel(add_win, text='Enter New Subject Name').pack(pady=10)
+    new_subject = ctk.CTkTextbox(add_win, height=1, width=100)
+    new_subject.pack(pady=10)
+
+    save_subj_button = ctk.CTkButton(add_win, text='Save', command= lambda : save_subject(new_subject.get('0.0', 'end'), add_win, df)) 
+    save_subj_button.pack(pady=10)
+
+# Create a button to add a new subject
+add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df)).pack(pady=10)
 
 win.mainloop()
