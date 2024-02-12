@@ -1,4 +1,6 @@
-Subject,Assessment,Mark,Rank
-Physics,m,12/20,m
-Maths,m,m,m
-Food Tech,m,m,m
+Subject,Mark 1,Rank 1,Mark 2,Rank 2,Mark 3,Rank 3,Mark 4,Rank 4
+Physics,12/20,100,none,none,none,none,none,none
+Maths,19/20,8,none,none,none,none,none,none
+Food Tech,21/25,4,none,none,none,none,none,none
+Chemistry,15/20,7,none,none,none,none,none,none
+Biology,18/20,5,none,none,none,none,none,none
