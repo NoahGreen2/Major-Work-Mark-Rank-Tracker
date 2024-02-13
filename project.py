@@ -93,6 +93,35 @@ def delete_subject(subject, toplevel):
     toplevel.destroy()
     win.deiconify()
 
+#Function to open a goals window
+def open_goals_window(subject, toplevel):
+    goals_win = ctk.CTkToplevel(toplevel)
+    goals_win.title(str(subject) + ' Goals')
+    goals_win.geometry("300x350")
+
+    index = subjects.index(subject)
+
+    toplevel.withdraw()
+
+    ctk.CTkLabel(goals_win, text=(str(subject)+' Goals'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
+
+    goaltextboxes = []
+    goals = str(df.iloc[index, -1])
+    goals = list(goals.split("$"))
+    scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=200)
+    scrollframe.pack()
+    for i in range(len(goals)):
+        goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
+        goaltxt.insert(END, goals[i])
+        goaltxt.pack(pady=10)
+        goaltextboxes.append(goaltxt)
+        checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved')
+        checkbox.pack(pady=10)
+
+
+    close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : close_window(goals_win, toplevel))
+    close_button.pack(pady=10)
+
 #Function to open a subject homepage
 def open_subject(index):
     subject = subjects[index]
@@ -107,6 +136,9 @@ def open_subject(index):
 
     edit_button = ctk.CTkButton(toplevel, text='Edit Marks/Ranks', command= lambda subject=subject: open_edit_window(subject, toplevel))
     edit_button.pack(pady=10)
+
+    goals_button = ctk.CTkButton(toplevel, text='Goals', command= lambda subject=subject: open_goals_window(subject, toplevel))
+    goals_button.pack(pady=10)
 
     close_button = ctk.CTkButton(toplevel, text='Close', command= lambda toplevel=toplevel: close_window(toplevel, win))
     close_button.pack(pady=10)
@@ -132,7 +164,7 @@ def set_page(new_subject, add_button):
 def save_subject(new_subject, add_win, df, add_button):
     if new_subject != '':
         global win
-        data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none']
+        data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','none']
         df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
         df.to_csv('project.csv', index=False)
         read_csv()
