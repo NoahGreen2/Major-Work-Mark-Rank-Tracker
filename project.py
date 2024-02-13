@@ -22,8 +22,8 @@ subj_buttons = []
 def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel):
     index = subjects.index(subject)
     for i in range(4):
-        df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")
-        df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")
+        df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")  #This bit is ai - I couldn't figure out how to properly edit
+        df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")  # the values in the dataframe
         df.iloc[index, i*4+2] = mark_textboxes_outof[i].get("1.0", "end-1c")
         df.iloc[index, i*4+4] = rank_textboxes_outof[i].get("1.0", "end-1c")
 
@@ -81,6 +81,17 @@ def close_window(toplevel, win):
     toplevel.destroy()
     win.deiconify()
 
+#Function to delete a subject
+def delete_subject(subject, toplevel):
+    global subjects, win, subj_buttons
+    index = subjects.index(subject)
+    df.drop(index, inplace=True)
+    df.to_csv('project.csv', index=False)
+    read_csv()
+    subj_buttons[index].destroy()
+    subjects = df['Subject'].tolist()
+    toplevel.destroy()
+    win.deiconify()
 
 #Function to open a subject homepage
 def open_subject(index):
@@ -100,25 +111,33 @@ def open_subject(index):
     close_button = ctk.CTkButton(toplevel, text='Close', command= lambda toplevel=toplevel: close_window(toplevel, win))
     close_button.pack(pady=10)
 
+    delete_button = ctk.CTkButton(toplevel, text='Delete Subject', command= lambda : delete_subject(subject, toplevel))
+    delete_button.pack(pady=10)
+
 # Create a button for each existing subject
 def set_page(new_subject, add_button):
     subjects.append(new_subject)
     index = subjects.index(new_subject)
     add_button.destroy()
-    subj_buttons.append(ctk.CTkButton(win, text=new_subject, command= lambda index=index: open_subject(index)).pack(pady=10))
+    new_button = ctk.CTkButton(win, text=new_subject, command= lambda index=index: open_subject(index))
+    new_button.pack(pady=10)
+    subj_buttons.append(new_button)
     # Create a button to add a new subject
-    add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df)).pack(pady=10)
+    add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df, add_button))
+    add_button.pack(pady=10)
     win_widgets.append(subj_buttons)
     win_widgets.append(add_button)
 
 #Function to save a new subject
 def save_subject(new_subject, add_win, df, add_button):
+    if new_subject != '':
+        global win
+        data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none']
+        df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
+        df.to_csv('project.csv', index=False)
+        read_csv()
+        set_page(new_subject, add_button)
     add_win.destroy()
-    data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none']
-    df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
-    df.to_csv('project.csv', index=False)
-    read_csv()
-    set_page(new_subject, add_button)
     win.deiconify()
 
 #Function to add a new subject
@@ -130,16 +149,18 @@ def add_subject(df, add_button):
     win.withdraw()
 
     ctk.CTkLabel(add_win, text='Enter New Subject Name').pack(pady=10)
-    new_subject = ctk.CTkEntry(add_win, height=1, width=100)
+    new_subject = ctk.CTkEntry(add_win, height=20, width=150, placeholder_text='Subject Name')
     new_subject.pack(pady=10)
 
-    save_subj_button = ctk.CTkButton(add_win, text='Save', command= lambda : save_subject(new_subject.get(), add_win, df, add_button)) 
+    save_subj_button = ctk.CTkButton(add_win, text='Save and Exit', command= lambda : save_subject(new_subject.get(), add_win, df, add_button)) 
     save_subj_button.pack(pady=10)
 
 # Set the page
 index = 0
 for subject in subjects:
-    subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
+    button = ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index))
+    button.pack(pady=10)
+    subj_buttons.append(button)
     index += 1    
 # Create a button to add a new subject
 add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df, add_button))
