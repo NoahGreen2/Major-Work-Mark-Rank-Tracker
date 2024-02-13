@@ -6,10 +6,16 @@ import pandas as pd
 win = ctk.CTk()
 win.title("Main Menu")
 win.geometry("300x500")
+win_widgets = []
 
 #Read the csv file
-df = pd.read_csv('project.csv')
-subjects = df['Subject'].tolist()
+def read_csv():
+    global df, subjects
+    df = pd.read_csv('project.csv')
+    subjects = df['Subject'].tolist()
+
+read_csv()
+
 subj_buttons = []
 
 #Function to save changes to the dataframe
@@ -95,22 +101,28 @@ def open_subject(index):
     close_button.pack(pady=10)
 
 # Create a button for each existing subject
-index = 0
-for subject in subjects:
-    subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
-    index += 1
+def set_page(new_subject, add_button):
+    subjects.append(new_subject)
+    index = subjects.index(new_subject)
+    add_button.destroy()
+    subj_buttons.append(ctk.CTkButton(win, text=new_subject, command= lambda index=index: open_subject(index)).pack(pady=10))
+    # Create a button to add a new subject
+    add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df)).pack(pady=10)
+    win_widgets.append(subj_buttons)
+    win_widgets.append(add_button)
 
 #Function to save a new subject
-def save_subject(new_subject, add_win, df):
+def save_subject(new_subject, add_win, df, add_button):
     add_win.destroy()
     data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none']
-    newDF = pd.DataFrame(columns=data)
-    
-    df.to_csv('data.csv', index=False)
+    df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
+    df.to_csv('project.csv', index=False)
+    read_csv()
+    set_page(new_subject, add_button)
     win.deiconify()
 
 #Function to add a new subject
-def add_subject(df):
+def add_subject(df, add_button):
     add_win = ctk.CTkToplevel(win)
     add_win.title('Add New Subject')
     add_win.geometry("300x300")
@@ -118,13 +130,19 @@ def add_subject(df):
     win.withdraw()
 
     ctk.CTkLabel(add_win, text='Enter New Subject Name').pack(pady=10)
-    new_subject = ctk.CTkTextbox(add_win, height=1, width=100)
+    new_subject = ctk.CTkEntry(add_win, height=1, width=100)
     new_subject.pack(pady=10)
 
-    save_subj_button = ctk.CTkButton(add_win, text='Save', command= lambda : save_subject(new_subject.get('0.0', 'end'), add_win, df)) 
+    save_subj_button = ctk.CTkButton(add_win, text='Save', command= lambda : save_subject(new_subject.get(), add_win, df, add_button)) 
     save_subj_button.pack(pady=10)
 
+# Set the page
+index = 0
+for subject in subjects:
+    subj_buttons.append(ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index)).pack(pady=10))
+    index += 1    
 # Create a button to add a new subject
-add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df)).pack(pady=10)
+add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df, add_button))
+add_button.pack(pady=10)
 
 win.mainloop()

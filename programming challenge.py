@@ -1,2 +1,4 @@
-for i in range(4):
-    print(i)
+subjects = ['Maths', 'English', 'Science', 'History', 'Geography', 'Art', 'Music', 'Drama', 'PE', 'ICT']
+subject = 'ICT'
+index = subjects.index(subject)
+print(index)
