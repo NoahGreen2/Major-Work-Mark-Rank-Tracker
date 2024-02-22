@@ -93,11 +93,39 @@ def delete_subject(subject, toplevel):
     toplevel.destroy()
     win.deiconify()
 
+#Function to add a new goal
+def add_goal(goaltextboxes, goalcheckboxes, scrollframe):
+    goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
+    goaltxt.pack(pady=10)
+    goaltxt.insert(END, 'New Goal')
+    goaltextboxes.append(goaltxt)
+    check_var = ctk.StringVar(value='False')
+    checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
+    checkbox.pack(pady=10)
+    goalcheckboxes.append(check_var)
+
+#Function to save changes to the goals
+def save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel):
+    index = subjects.index(subject)
+    goals = ''
+    for i in range(len(goaltextboxes)):
+        goal = goaltextboxes[i].get("1.0", "end-1c")
+        goal_check = goalcheckboxes[i].get()
+        goal += '#' + goal_check
+        if i == len(goaltextboxes)-1:
+            goals += goal
+        else:
+            goals += goal + '$'
+    df.iloc[index, -1] = goals
+    df.to_csv('project.csv', index=False)
+    goals_win.destroy()
+    toplevel.deiconify()
+
 #Function to open a goals window
 def open_goals_window(subject, toplevel):
     goals_win = ctk.CTkToplevel(toplevel)
     goals_win.title(str(subject) + ' Goals')
-    goals_win.geometry("300x350")
+    goals_win.geometry("300x500")
 
     index = subjects.index(subject)
 
@@ -106,20 +134,26 @@ def open_goals_window(subject, toplevel):
     ctk.CTkLabel(goals_win, text=(str(subject)+' Goals'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
 
     goaltextboxes = []
+    goalcheckboxes = []
     goals = str(df.iloc[index, -1])
     goals = list(goals.split("$"))
-    scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=200)
+    scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=300)
     scrollframe.pack()
     for i in range(len(goals)):
         goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
-        goaltxt.insert(END, goals[i])
+        goalandcheck = goals[i].split("#")
+        goaltxt.insert(END, goalandcheck[0])
         goaltxt.pack(pady=10)
         goaltextboxes.append(goaltxt)
-        checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved')
+        check_var = ctk.StringVar(value=goalandcheck[1])
+        checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
         checkbox.pack(pady=10)
+        goalcheckboxes.append(check_var)
 
+    new_goal_button = ctk.CTkButton(goals_win, text='Add New Goal', command= lambda : add_goal(goaltextboxes, goalcheckboxes, scrollframe))
+    new_goal_button.pack(pady=10)
 
-    close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : close_window(goals_win, toplevel))
+    close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel))
     close_button.pack(pady=10)
 
 #Function to open a subject homepage
@@ -164,7 +198,7 @@ def set_page(new_subject, add_button):
 def save_subject(new_subject, add_win, df, add_button):
     if new_subject != '':
         global win
-        data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','none']
+        data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','New Goal#False']
         df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
         df.to_csv('project.csv', index=False)
         read_csv()
