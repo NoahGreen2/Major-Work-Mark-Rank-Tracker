@@ -199,7 +199,7 @@ def save_subject(new_subject, add_win, df, add_button):
     if new_subject != '':
         global win
         data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','New Goal#False']
-        df = df.append(pd.Series(data, index=df.columns), ignore_index=True)
+        df = pd.concat([df, pd.DataFrame([data], columns=df.columns)], ignore_index=True)
         df.to_csv('project.csv', index=False)
         read_csv()
         set_page(new_subject, add_button)
