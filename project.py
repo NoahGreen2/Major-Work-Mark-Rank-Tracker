@@ -1,6 +1,7 @@
 from tkinter import *
 import customtkinter as ctk
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Create main customtkinter window
 win = ctk.CTk()
@@ -156,13 +157,46 @@ def open_goals_window(subject, toplevel):
     close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel))
     close_button.pack(pady=10)
 
+def open_graphs(subject, toplevel):
+    index = subjects.index(subject)
+    graph_win = ctk.CTkToplevel(toplevel)
+    graph_win.title(str(subject) + ' Graphs')
+    graph_win.geometry("300x300")
+
+    toplevel.withdraw()
+
+    ctk.CTkLabel(graph_win, text=(str(subject)+' Graphs'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
+
+    tasks = 0
+    for task in df.iloc[index, 1:17:4]:
+        if task != 'none':
+            tasks += 1
+    
+    task_marks = []
+    for i in range(4):
+        mark = df.iloc[index, i*4+1]
+        if mark != 'none':
+            task_marks.append(float(int(mark)/int(df.iloc[index, i*4+2]))*100)
+    tasks = []
+    for i in range(len(task_marks)):
+        tasks.append('Task ' + str(i+1))
+    
+    plt.figure(figsize=(9, 3))
+    plt.plot(tasks, task_marks, color='skyblue')
+    plt.ylim(0, 100)
+    plt.show()
+
+    # Create a button to save the changes
+    close_button = ctk.CTkButton(graph_win, text='Close', command= lambda : close_window(graph_win, toplevel))
+    close_button.pack(pady=10)
+
 #Function to open a subject homepage
 def open_subject(index):
     subject = subjects[index]
 
     toplevel = ctk.CTkToplevel(win)
     toplevel.title(subject)
-    toplevel.geometry("300x300")
+    toplevel.geometry("300x400")
 
     win.withdraw()
 
@@ -173,6 +207,9 @@ def open_subject(index):
 
     goals_button = ctk.CTkButton(toplevel, text='Goals', command= lambda subject=subject: open_goals_window(subject, toplevel))
     goals_button.pack(pady=10)
+
+    graph_button = ctk.CTkButton(toplevel, text='Graphs', command= lambda subject=subject: open_graphs(subject, toplevel))
+    graph_button.pack(pady=10)
 
     close_button = ctk.CTkButton(toplevel, text='Close', command= lambda toplevel=toplevel: close_window(toplevel, win))
     close_button.pack(pady=10)
