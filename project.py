@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import tkinter.messagebox as messagebox
 
 # Create main customtkinter window
 win = ctk.CTk()
@@ -24,17 +25,32 @@ subj_buttons = []
 #Function to save changes to the dataframe
 def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel):
     index = subjects.index(subject)
-    # Loop through the four assessments to save the edited values to the dataframe
+    # Check if the values entered are valid
+    valid = True
     for i in range(4):
-        df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")  #This bit is ai - I couldn't figure out how to properly edit
-        df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")  # the values in the dataframe
-        df.iloc[index, i*4+2] = mark_textboxes_outof[i].get("1.0", "end-1c")
-        df.iloc[index, i*4+4] = rank_textboxes_outof[i].get("1.0", "end-1c")
-    # Save the changes to the csv file
-    df.to_csv('project.csv', index=False)
-    # Close the edit window and restore the main window
-    edit_win.destroy()
-    toplevel.deiconify()
+        if not mark_textboxes[i].get("1.0", "end-1c").isdigit() or not mark_textboxes_outof[i].get("1.0", "end-1c").isdigit() or not rank_textboxes[i].get("1.0", "end-1c").isdigit() or not rank_textboxes_outof[i].get("1.0", "end-1c").isdigit():
+            valid = False
+    for i in range(4):
+        if int(mark_textboxes[i].get("1.0", "end-1c")) > int(mark_textboxes_outof[i].get("1.0", "end-1c")) or int(rank_textboxes[i].get("1.0", "end-1c")) > int(rank_textboxes_outof[i].get("1.0", "end-1c")):
+            valid = False
+    for i in range(4):
+        if int(mark_textboxes[i].get("1.0", "end-1c")) < 0 or int(mark_textboxes_outof[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes_outof[i].get("1.0", "end-1c")) <= 0:
+            valid = False
+
+    if valid:
+        # Loop through the four assessments to save the edited values to the dataframe
+        for i in range(4):
+            df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")  #This bit is ai - I couldn't figure out how to properly edit
+            df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")  # the values in the dataframe
+            df.iloc[index, i*4+2] = mark_textboxes_outof[i].get("1.0", "end-1c")
+            df.iloc[index, i*4+4] = rank_textboxes_outof[i].get("1.0", "end-1c")
+        # Save the changes to the csv file
+        df.to_csv('project.csv', index=False)
+        # Close the edit window and restore the main window
+        edit_win.destroy()
+        toplevel.deiconify()
+    else:
+        messagebox.showerror("Error", "Please enter valid numbers for marks and ranks")
 
 #Function to open an edit window
 def open_edit_window(subject, toplevel):
