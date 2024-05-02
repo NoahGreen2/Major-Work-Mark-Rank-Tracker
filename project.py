@@ -2,12 +2,14 @@ from tkinter import *
 import customtkinter as ctk
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 # Create main customtkinter window
 win = ctk.CTk()
 win.title("Main Menu")
-win.geometry("300x500")
-win_widgets = []
+win.geometry("300x300")
+win.resizable(False, False)
 
 #Read the csv file
 def read_csv():
@@ -22,22 +24,26 @@ subj_buttons = []
 #Function to save changes to the dataframe
 def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, rank_textboxes_outof, edit_win, toplevel):
     index = subjects.index(subject)
+    # Loop through the four assessments to save the edited values to the dataframe
     for i in range(4):
         df.iloc[index, i*4+1] = mark_textboxes[i].get("1.0", "end-1c")  #This bit is ai - I couldn't figure out how to properly edit
         df.iloc[index, i*4+3] = rank_textboxes[i].get("1.0", "end-1c")  # the values in the dataframe
         df.iloc[index, i*4+2] = mark_textboxes_outof[i].get("1.0", "end-1c")
         df.iloc[index, i*4+4] = rank_textboxes_outof[i].get("1.0", "end-1c")
-
+    # Save the changes to the csv file
     df.to_csv('project.csv', index=False)
+    # Close the edit window and restore the main window
     edit_win.destroy()
     toplevel.deiconify()
 
 #Function to open an edit window
 def open_edit_window(subject, toplevel):
     index = subjects.index(subject)
+    # Create a new window for editing the marks and ranks
     edit_win = ctk.CTkToplevel(toplevel)
     edit_win.title(str(subject) + ' Marks/Ranks')
     edit_win.geometry("350x400")
+    edit_win.resizable(False, False)
 
     toplevel.withdraw()
 
@@ -45,7 +51,7 @@ def open_edit_window(subject, toplevel):
     mark_textboxes_outof = []
     rank_textboxes = []
     rank_textboxes_outof = []
-
+    # Place the labels and textboxes for each assessment
     for i in range(4):
         ctk.CTkLabel(edit_win, text='Task ' + str(i+1)).place(x=10,y=10+80*i)
         ctk.CTkLabel(edit_win, text='Mark').place(x=75,y=10+80*i)
@@ -86,16 +92,19 @@ def close_window(toplevel, win):
 def delete_subject(subject, toplevel):
     global subjects, win, subj_buttons
     index = subjects.index(subject)
+    # Remove the subject from the dataframe and save the changes
     df.drop(index, inplace=True)
     df.to_csv('project.csv', index=False)
     read_csv()
     subj_buttons[index].destroy()
+    subj_buttons.pop(index)
     subjects = df['Subject'].tolist()
     toplevel.destroy()
+    set_homepage()
     win.deiconify()
 
 #Function to add a new goal
-def add_goal(goaltextboxes, goalcheckboxes, scrollframe):
+def add_goal(goaltextboxes, goalcheckboxvals, scrollframe):
     goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
     goaltxt.pack(pady=10)
     goaltxt.insert(END, 'New Goal')
@@ -103,15 +112,16 @@ def add_goal(goaltextboxes, goalcheckboxes, scrollframe):
     check_var = ctk.StringVar(value='False')
     checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
     checkbox.pack(pady=10)
-    goalcheckboxes.append(check_var)
+    goalcheckboxvals.append(check_var)
 
 #Function to save changes to the goals
-def save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel):
+def save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel):
     index = subjects.index(subject)
     goals = ''
+    # Loop through the goals to save the edited data to the dataframe including checkboxes
     for i in range(len(goaltextboxes)):
         goal = goaltextboxes[i].get("1.0", "end-1c")
-        goal_check = goalcheckboxes[i].get()
+        goal_check = goalcheckboxvals[i].get()
         goal += '#' + goal_check
         if i == len(goaltextboxes)-1:
             goals += goal
@@ -122,11 +132,23 @@ def save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel):
     goals_win.destroy()
     toplevel.deiconify()
 
+def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons):
+    goaltextboxes[i].destroy()
+    goalcheckboxes[i].destroy()
+    goaltextboxes.pop(i)
+    goalcheckboxes.pop(i)
+    for i in range(len(goaltextboxes)):
+        goaltextboxes[i].pack(pady=10)
+        goalcheckboxes[i].pack(pady=10)
+    delete_goal_buttons[i].destroy()
+    delete_goal_buttons.pop(i)
+
 #Function to open a goals window
 def open_goals_window(subject, toplevel):
     goals_win = ctk.CTkToplevel(toplevel)
     goals_win.title(str(subject) + ' Goals')
     goals_win.geometry("300x500")
+    goals_win.resizable(False, False)
 
     index = subjects.index(subject)
 
@@ -135,7 +157,9 @@ def open_goals_window(subject, toplevel):
     ctk.CTkLabel(goals_win, text=(str(subject)+' Goals'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
 
     goaltextboxes = []
+    goalcheckboxvals = []
     goalcheckboxes = []
+    delete_goal_buttons = []
     goals = str(df.iloc[index, -1])
     goals = list(goals.split("$"))
     scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=300)
@@ -149,19 +173,25 @@ def open_goals_window(subject, toplevel):
         check_var = ctk.StringVar(value=goalandcheck[1])
         checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
         checkbox.pack(pady=10)
-        goalcheckboxes.append(check_var)
+        goalcheckboxes.append(checkbox)
+        goalcheckboxvals.append(check_var)
+        delete_goal_button = ctk.CTkButton(scrollframe, text='Delete Goal', command= lambda i=i: delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons))
+        delete_goal_button.pack(pady=10)
+        delete_goal_buttons.append(delete_goal_button)
 
-    new_goal_button = ctk.CTkButton(goals_win, text='Add New Goal', command= lambda : add_goal(goaltextboxes, goalcheckboxes, scrollframe))
+    new_goal_button = ctk.CTkButton(goals_win, text='Add New Goal', command= lambda : add_goal(goaltextboxes, goalcheckboxvals, scrollframe))
     new_goal_button.pack(pady=10)
 
-    close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : save_goals(subject, goaltextboxes, goalcheckboxes, goals_win, toplevel))
+    close_button = ctk.CTkButton(goals_win, text='Close', command= lambda : save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel))
     close_button.pack(pady=10)
 
+#Function to open a graph window
 def open_graphs(subject, toplevel):
     index = subjects.index(subject)
     graph_win = ctk.CTkToplevel(toplevel)
     graph_win.title(str(subject) + ' Graphs')
-    graph_win.geometry("300x300")
+    graph_win.geometry("700x550")
+    graph_win.resizable(False, False)
 
     toplevel.withdraw()
 
@@ -169,26 +199,48 @@ def open_graphs(subject, toplevel):
 
     tasks = 0
     for task in df.iloc[index, 1:17:4]:
-        if task != 'none':
+        if task != 'none' and task != '':
             tasks += 1
     
     task_marks = []
     for i in range(4):
         mark = df.iloc[index, i*4+1]
-        if mark != 'none':
+        if mark != 'none' and mark != '':
             task_marks.append(float(int(mark)/int(df.iloc[index, i*4+2]))*100)
+    task_ranks = []
+    for i in range(4):
+        rank = df.iloc[index, i*4+3]
+        if rank != 'none' and rank != '':
+            task_ranks.append(float(rank))
     tasks = []
     for i in range(len(task_marks)):
         tasks.append('Task ' + str(i+1))
     
-    plt.figure(figsize=(9, 3))
-    plt.plot(tasks, task_marks, color='skyblue')
-    plt.ylim(0, 100)
-    plt.show()
-
     # Create a button to save the changes
     close_button = ctk.CTkButton(graph_win, text='Close', command= lambda : close_window(graph_win, toplevel))
     close_button.pack(pady=10)
+
+    fig = Figure(figsize=(8, 5), dpi=100)
+    plot1 = fig.add_subplot(121)
+    plot2 = fig.add_subplot(122)
+
+    plot1.plot(tasks, task_marks, 'r', linewidth=5)
+    plot1.set_title('Marks Graph')
+    plot1.set_xlabel('Tasks')
+    plot1.set_ylabel('Mark %')
+
+    plot2.plot(tasks, task_ranks, 'g', linewidth=5)
+    plot2.set_title('Ranks Graph')
+    plot2.set_xlabel('Tasks')
+    plot2.set_ylabel('Rank')
+    plot2.invert_yaxis()
+
+    # Create a canvas to display the plot
+    canvas = FigureCanvasTkAgg(fig, master=graph_win)
+    canvas.draw()
+    canvas.get_tk_widget().pack()
+
+
 
 #Function to open a subject homepage
 def open_subject(index):
@@ -197,6 +249,7 @@ def open_subject(index):
     toplevel = ctk.CTkToplevel(win)
     toplevel.title(subject)
     toplevel.geometry("300x400")
+    toplevel.resizable(False, False)
 
     win.withdraw()
 
@@ -218,18 +271,16 @@ def open_subject(index):
     delete_button.pack(pady=10)
 
 # Create a button for each existing subject
-def set_page(new_subject, add_button):
+def new_subject_set_page(new_subject, add_button):
     subjects.append(new_subject)
     index = subjects.index(new_subject)
     add_button.destroy()
-    new_button = ctk.CTkButton(win, text=new_subject, command= lambda index=index: open_subject(index))
+    new_button = ctk.CTkButton(homescrollframe, text=new_subject, command= lambda index=index: open_subject(index))
     new_button.pack(pady=10)
     subj_buttons.append(new_button)
     # Create a button to add a new subject
-    add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df, add_button))
+    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button))
     add_button.pack(pady=10)
-    win_widgets.append(subj_buttons)
-    win_widgets.append(add_button)
 
 #Function to save a new subject
 def save_subject(new_subject, add_win, df, add_button):
@@ -239,7 +290,7 @@ def save_subject(new_subject, add_win, df, add_button):
         df = pd.concat([df, pd.DataFrame([data], columns=df.columns)], ignore_index=True)
         df.to_csv('project.csv', index=False)
         read_csv()
-        set_page(new_subject, add_button)
+        new_subject_set_page(new_subject, add_button)
     add_win.destroy()
     win.deiconify()
 
@@ -248,6 +299,7 @@ def add_subject(df, add_button):
     add_win = ctk.CTkToplevel(win)
     add_win.title('Add New Subject')
     add_win.geometry("300x300")
+    add_win.resizable(False, False)
 
     win.withdraw()
 
@@ -259,14 +311,22 @@ def add_subject(df, add_button):
     save_subj_button.pack(pady=10)
 
 # Set the page
-index = 0
-for subject in subjects:
-    button = ctk.CTkButton(win, text=subject, command= lambda index=index: open_subject(index))
-    button.pack(pady=10)
-    subj_buttons.append(button)
-    index += 1    
-# Create a button to add a new subject
-add_button = ctk.CTkButton(win, text='Add New Subject', command=lambda : add_subject(df, add_button))
-add_button.pack(pady=10)
+def set_homepage():
+    global homescrollframe
+    for widget in win.winfo_children():
+        widget.destroy()
+    homescrollframe = ctk.CTkScrollableFrame(win, width=300, height=300)
+    homescrollframe.pack()
+    index = 0
+    for subject in subjects:
+        button = ctk.CTkButton(homescrollframe, text=subject, command= lambda index=index: open_subject(index))
+        button.pack(pady=10)
+        subj_buttons.append(button)
+        index += 1    
+    # Create a button to add a new subject
+    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button))
+    add_button.pack(pady=10)
+
+set_homepage()
 
 win.mainloop()
