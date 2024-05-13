@@ -9,8 +9,7 @@ import tkinter.messagebox as messagebox
 # Create main customtkinter window
 win = ctk.CTk()
 win.title("Main Menu")
-win.geometry("300x300")
-win.resizable(False, False)
+win.geometry("300x400")
 
 #Read the csv file
 def read_csv():
@@ -28,15 +27,23 @@ def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, 
     # Check if the values entered are valid
     valid = True
     for i in range(4):
-        if not mark_textboxes[i].get("1.0", "end-1c").isdigit() or not mark_textboxes_outof[i].get("1.0", "end-1c").isdigit() or not rank_textboxes[i].get("1.0", "end-1c").isdigit() or not rank_textboxes_outof[i].get("1.0", "end-1c").isdigit():
-            valid = False
-    for i in range(4):
-        if int(mark_textboxes[i].get("1.0", "end-1c")) > int(mark_textboxes_outof[i].get("1.0", "end-1c")) or int(rank_textboxes[i].get("1.0", "end-1c")) > int(rank_textboxes_outof[i].get("1.0", "end-1c")):
-            valid = False
-    for i in range(4):
-        if int(mark_textboxes[i].get("1.0", "end-1c")) < 0 or int(mark_textboxes_outof[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes_outof[i].get("1.0", "end-1c")) <= 0:
-            valid = False
-
+        if not mark_textboxes[i].get("1.0", "end-1c").isdigit():
+            if mark_textboxes[i].get("1.0", "end-1c") != 'none':
+                valid = False
+        if not mark_textboxes_outof[i].get("1.0", "end-1c").isdigit():
+            if mark_textboxes_outof[i].get("1.0", "end-1c") != 'none':
+                valid = False
+        if not rank_textboxes[i].get("1.0", "end-1c").isdigit():
+            if rank_textboxes[i].get("1.0", "end-1c") != 'none':
+                valid = False
+        if not rank_textboxes_outof[i].get("1.0", "end-1c").isdigit():
+            if rank_textboxes_outof[i].get("1.0", "end-1c") != 'none':
+                valid = False
+        if mark_textboxes[i].get("1.0", "end-1c").isdigit() and mark_textboxes_outof[i].get("1.0", "end-1c").isdigit() and rank_textboxes[i].get("1.0", "end-1c").isdigit() and rank_textboxes_outof[i].get("1.0", "end-1c").isdigit():
+            if int(mark_textboxes[i].get("1.0", "end-1c")) > int(mark_textboxes_outof[i].get("1.0", "end-1c")) or int(rank_textboxes[i].get("1.0", "end-1c")) > int(rank_textboxes_outof[i].get("1.0", "end-1c")):
+                valid = False
+            if int(mark_textboxes[i].get("1.0", "end-1c")) < 0 or int(mark_textboxes_outof[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes[i].get("1.0", "end-1c")) <= 0 or int(rank_textboxes_outof[i].get("1.0", "end-1c")) <= 0:
+                valid = False
     if valid:
         # Loop through the four assessments to save the edited values to the dataframe
         for i in range(4):
@@ -49,7 +56,7 @@ def save_changes(subject, mark_textboxes, mark_textboxes_outof, rank_textboxes, 
         # Close the edit window and restore the main window
         edit_win.destroy()
         toplevel.deiconify()
-    else:
+    else: #Show error message if values aren't valid
         messagebox.showerror("Error", "Please enter valid numbers for marks and ranks")
 
 #Function to open an edit window
@@ -125,6 +132,7 @@ def add_goal(goaltextboxes, goalcheckboxvals, scrollframe):
     goaltxt.pack(pady=10)
     goaltxt.insert(END, 'New Goal')
     goaltextboxes.append(goaltxt)
+    # Variable to store the value of the checkbox
     check_var = ctk.StringVar(value='False')
     checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
     checkbox.pack(pady=10)
@@ -148,6 +156,7 @@ def save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel):
     goals_win.destroy()
     toplevel.deiconify()
 
+#Function to delete a goal
 def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons):
     goaltextboxes[i].destroy()
     goalcheckboxes[i].destroy()
@@ -170,7 +179,7 @@ def open_goals_window(subject, toplevel):
 
     toplevel.withdraw()
 
-    ctk.CTkLabel(goals_win, text=(str(subject)+' Goals'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
+    ctk.CTkLabel(goals_win, text=(str(subject)+' Goals'), font=('Calibri', 40, 'bold')).pack(pady=10)
 
     goaltextboxes = []
     goalcheckboxvals = []
@@ -211,7 +220,7 @@ def open_graphs(subject, toplevel):
 
     toplevel.withdraw()
 
-    ctk.CTkLabel(graph_win, text=(str(subject)+' Graphs'), font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
+    ctk.CTkLabel(graph_win, text=(str(subject)+' Graphs'), font=('Calibri', 40, 'bold')).pack(pady=10)
 
     tasks = 0
     for task in df.iloc[index, 1:17:4]:
@@ -221,13 +230,17 @@ def open_graphs(subject, toplevel):
     task_marks = []
     for i in range(4):
         mark = df.iloc[index, i*4+1]
-        if mark != 'none' and mark != '':
+        if mark != 'none' and df.iloc[index, i*4+2] != 'none':
             task_marks.append(float(int(mark)/int(df.iloc[index, i*4+2]))*100)
+        elif mark == 'none' or df.iloc[index, i*4+2] == 'none':
+            task_marks.append(0)
     task_ranks = []
     for i in range(4):
         rank = df.iloc[index, i*4+3]
-        if rank != 'none' and rank != '':
+        if rank != 'none':
             task_ranks.append(float(rank))
+        elif rank == 'none':
+            task_ranks.append(0)
     tasks = []
     for i in range(len(task_marks)):
         tasks.append('Task ' + str(i+1))
@@ -256,8 +269,6 @@ def open_graphs(subject, toplevel):
     canvas.draw()
     canvas.get_tk_widget().pack()
 
-
-
 #Function to open a subject homepage
 def open_subject(index):
     subject = subjects[index]
@@ -269,7 +280,7 @@ def open_subject(index):
 
     win.withdraw()
 
-    ctk.CTkLabel(toplevel, text=subject, font=('Calibri', 40, 'bold', 'underline')).pack(pady=10)
+    ctk.CTkLabel(toplevel, text=subject, font=('Calibri', 40, 'bold')).pack(pady=10)
 
     edit_button = ctk.CTkButton(toplevel, text='Edit Marks/Ranks', command= lambda subject=subject: open_edit_window(subject, toplevel))
     edit_button.pack(pady=10)
@@ -300,8 +311,12 @@ def new_subject_set_page(new_subject, add_button):
 
 #Function to save a new subject
 def save_subject(new_subject, add_win, df, add_button):
-    if new_subject != '':
+    # Check if the subject name is valid
+    if new_subject == 'bingus':
+        messagebox.showerror('Congrats!', 'Bingus is happy')
+    elif new_subject != '':
         global win
+        # Create empty subject
         data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','New Goal#False']
         df = pd.concat([df, pd.DataFrame([data], columns=df.columns)], ignore_index=True)
         df.to_csv('project.csv', index=False)
@@ -326,12 +341,29 @@ def add_subject(df, add_button):
     save_subj_button = ctk.CTkButton(add_win, text='Save and Exit', command= lambda : save_subject(new_subject.get(), add_win, df, add_button)) 
     save_subj_button.pack(pady=10)
 
+#Function to open the instructions window
+def open_instructions():
+    instructions_win = ctk.CTkToplevel(win)
+    instructions_win.title('Instructions')
+    instructions_win.geometry("650x400")
+    instructions_win.resizable(False, False)
+
+    win.withdraw()
+
+    ctk.CTkLabel(instructions_win, text='Instructions', font=('Calibri', 40, 'bold')).pack(pady=10)
+
+    instructions = ctk.CTkLabel(instructions_win, text='Welcome to the Student Progress Tracker! \nTo get started, click on a subject to view the marks, ranks, goals and graphs. \nTo edit the marks and ranks, click on the Edit Marks/Ranks button. \nTo add or delete goals, click on the Goals button. \nTo view the graphs, click on the Graphs button. \nTo delete a subject, click on the Delete Subject button. \nTo add a new subject, click on the Add New Subject button. \nTo view these instructions again, click on the Instructions button. \nWhen you open and close the program, all your information will be saved,\n so that you may come back another day to review your results.', font=('Calibri', 20))
+    instructions.pack(pady=10)
+
+    close_button = ctk.CTkButton(instructions_win, text='Close', command= lambda : close_window(instructions_win, win))
+    close_button.pack(pady=10)
+
 # Set the page
 def set_homepage():
     global homescrollframe
     for widget in win.winfo_children():
         widget.destroy()
-    homescrollframe = ctk.CTkScrollableFrame(win, width=300, height=300)
+    homescrollframe = ctk.CTkScrollableFrame(win, width=300, height=400)
     homescrollframe.pack()
     index = 0
     for subject in subjects:
@@ -342,6 +374,9 @@ def set_homepage():
     # Create a button to add a new subject
     add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button))
     add_button.pack(pady=10)
+
+    instructions_button = ctk.CTkButton(homescrollframe, text='Instructions', command= lambda : open_instructions())
+    instructions_button.pack(pady=10)
 
 set_homepage()
 
