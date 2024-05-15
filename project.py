@@ -119,8 +119,6 @@ def delete_subject(subject, toplevel):
     df.drop(index, inplace=True)
     df.to_csv('project.csv', index=False)
     read_csv()
-    subj_buttons[index].destroy()
-    subj_buttons.pop(index)
     subjects = df['Subject'].tolist()
     toplevel.destroy()
     set_homepage()
@@ -297,36 +295,22 @@ def open_subject(index):
     delete_button = ctk.CTkButton(toplevel, text='Delete Subject', command= lambda : delete_subject(subject, toplevel))
     delete_button.pack(pady=10)
 
-# Create a button for each existing subject
-def new_subject_set_page(new_subject, add_button):
-    subjects.append(new_subject)
-    index = subjects.index(new_subject)
-    add_button.destroy()
-    new_button = ctk.CTkButton(homescrollframe, text=new_subject, command= lambda index=index: open_subject(index))
-    new_button.pack(pady=10)
-    subj_buttons.append(new_button)
-    # Create a button to add a new subject
-    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button))
-    add_button.pack(pady=10)
-
 #Function to save a new subject
-def save_subject(new_subject, add_win, df, add_button):
+def save_subject(new_subject, add_win, df, add_button, instructions_button):
     # Check if the subject name is valid
-    if new_subject == 'bingus':
-        messagebox.showerror('Congrats!', 'Bingus is happy')
-    elif new_subject != '':
+    if new_subject != '':
         global win
         # Create empty subject
         data = [new_subject, 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none','New Goal#False']
         df = pd.concat([df, pd.DataFrame([data], columns=df.columns)], ignore_index=True)
         df.to_csv('project.csv', index=False)
         read_csv()
-        new_subject_set_page(new_subject, add_button)
+        set_homepage()
     add_win.destroy()
     win.deiconify()
 
 #Function to add a new subject
-def add_subject(df, add_button):
+def add_subject(df, add_button, instructions_button):
     add_win = ctk.CTkToplevel(win)
     add_win.title('Add New Subject')
     add_win.geometry("300x300")
@@ -338,7 +322,7 @@ def add_subject(df, add_button):
     new_subject = ctk.CTkEntry(add_win, height=20, width=150, placeholder_text='Subject Name')
     new_subject.pack(pady=10)
 
-    save_subj_button = ctk.CTkButton(add_win, text='Save and Exit', command= lambda : save_subject(new_subject.get(), add_win, df, add_button)) 
+    save_subj_button = ctk.CTkButton(add_win, text='Save and Exit', command= lambda : save_subject(new_subject.get(), add_win, df, add_button, instructions_button)) 
     save_subj_button.pack(pady=10)
 
 #Function to open the instructions window
@@ -360,7 +344,8 @@ def open_instructions():
 
 # Set the page
 def set_homepage():
-    global homescrollframe
+    global homescrollframe, subjects
+    subj_buttons = []
     for widget in win.winfo_children():
         widget.destroy()
     homescrollframe = ctk.CTkScrollableFrame(win, width=300, height=400)
@@ -372,7 +357,7 @@ def set_homepage():
         subj_buttons.append(button)
         index += 1    
     # Create a button to add a new subject
-    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button))
+    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button, instructions_button))
     add_button.pack(pady=10)
 
     instructions_button = ctk.CTkButton(homescrollframe, text='Instructions', command= lambda : open_instructions())
