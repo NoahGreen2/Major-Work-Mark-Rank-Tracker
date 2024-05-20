@@ -124,8 +124,18 @@ def delete_subject(subject, toplevel):
     set_homepage()
     win.deiconify()
 
+#Function to make sure that the user wishes to delete a subject
+def check_delete_subject(subject, toplevel):
+    # Create a message box to confirm the deletion
+    answer = messagebox.askyesno("Delete", "Are you sure you want to delete " + str(subject) + "?")
+    if answer:
+        delete_subject(subject, toplevel)
+    else:
+        toplevel.deiconify()
+
 #Function to add a new goal
 def add_goal(goaltextboxes, goalcheckboxvals, scrollframe):
+    # Create a new textbox and set its contents to 'New Goal'
     goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
     goaltxt.pack(pady=10)
     goaltxt.insert(END, 'New Goal')
@@ -145,6 +155,7 @@ def save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel):
         goal = goaltextboxes[i].get("1.0", "end-1c")
         goal_check = goalcheckboxvals[i].get()
         goal += '#' + goal_check
+        # Only add a $ to separate the goals if it is not the last goal
         if i == len(goaltextboxes)-1:
             goals += goal
         else:
@@ -289,11 +300,11 @@ def open_subject(index):
     graph_button = ctk.CTkButton(toplevel, text='Graphs', command= lambda subject=subject: open_graphs(subject, toplevel))
     graph_button.pack(pady=10)
 
-    close_button = ctk.CTkButton(toplevel, text='Close', command= lambda toplevel=toplevel: close_window(toplevel, win))
-    close_button.pack(pady=10)
-
-    delete_button = ctk.CTkButton(toplevel, text='Delete Subject', command= lambda : delete_subject(subject, toplevel))
+    delete_button = ctk.CTkButton(toplevel, text='Delete Subject', fg_color='red', hover_color='tomato', command= lambda : check_delete_subject(subject, toplevel))
     delete_button.pack(pady=10)
+    
+    close_button = ctk.CTkButton(toplevel, text='Back', fg_color='grey', hover_color='darkgrey', command= lambda toplevel=toplevel: close_window(toplevel, win))
+    close_button.pack(pady=10)
 
 #Function to save a new subject
 def save_subject(new_subject, add_win, df, add_button, instructions_button):
@@ -329,6 +340,7 @@ def add_subject(df, add_button, instructions_button):
 
 #Function to open the instructions window
 def open_instructions():
+    # Establish the window
     instructions_win = ctk.CTkToplevel(win)
     instructions_win.title('Instructions')
     instructions_win.geometry("650x400")
@@ -336,12 +348,14 @@ def open_instructions():
 
     win.withdraw()
 
+    # Create text for the instructions
     ctk.CTkLabel(instructions_win, text='Instructions', font=('Calibri', 40, 'bold')).pack(pady=10)
 
     instructions = ctk.CTkLabel(instructions_win, text='Welcome to the Student Progress Tracker! \nTo get started, click on a subject to view the marks, ranks, goals and graphs. \nTo edit the marks and ranks, click on the Edit Marks/Ranks button. \nTo add or delete goals, click on the Goals button. \nTo view the graphs, click on the Graphs button. \nTo delete a subject, click on the Delete Subject button. \nTo add a new subject, click on the Add New Subject button. \nTo view these instructions again, click on the Instructions button. \nWhen you open and close the program, all your information will be saved,\n so that you may come back another day to review your results.', font=('Calibri', 20))
     instructions.pack(pady=10)
 
-    close_button = ctk.CTkButton(instructions_win, text='Close', command= lambda : close_window(instructions_win, win))
+    # Create a button to close the window
+    close_button = ctk.CTkButton(instructions_win, fg_color='grey', hover_color='darkgrey', text='Close', command= lambda : close_window(instructions_win, win))
     close_button.pack(pady=10)
 
 # Set the page
@@ -359,10 +373,10 @@ def set_homepage():
         subj_buttons.append(button)
         index += 1    
     # Create a button to add a new subject
-    add_button = ctk.CTkButton(homescrollframe, text='Add New Subject', command=lambda : add_subject(df, add_button, instructions_button))
+    add_button = ctk.CTkButton(homescrollframe, fg_color='green', hover_color='mediumseagreen', text='Add New Subject', text_color='black', command=lambda : add_subject(df, add_button, instructions_button))
     add_button.pack(pady=10)
 
-    instructions_button = ctk.CTkButton(homescrollframe, text='Instructions', command= lambda : open_instructions())
+    instructions_button = ctk.CTkButton(homescrollframe, fg_color='yellow', hover_color='lightgoldenrodyellow', text='Instructions', text_color='black', command= lambda : open_instructions())
     instructions_button.pack(pady=10)
 
 # Easter egg - check line 300
