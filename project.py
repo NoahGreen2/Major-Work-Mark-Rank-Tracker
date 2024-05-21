@@ -10,6 +10,8 @@ import tkinter.messagebox as messagebox
 win = ctk.CTk()
 win.title("Main Menu")
 win.geometry("300x400")
+win.resizable(False,False)
+ctk.set_appearance_mode("dark")
 
 #Read the csv file
 def read_csv():
@@ -177,6 +179,9 @@ def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons):
     delete_goal_buttons[i].destroy()
     delete_goal_buttons.pop(i)
 
+## BUG - Needs a fix
+## When there are no goals
+
 #Function to open a goals window
 def open_goals_window(subject, toplevel):
     goals_win = ctk.CTkToplevel(toplevel)
@@ -195,23 +200,24 @@ def open_goals_window(subject, toplevel):
     goalcheckboxes = []
     delete_goal_buttons = []
     goals = str(df.iloc[index, -1])
-    goals = list(goals.split("$"))
-    scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=300)
-    scrollframe.pack()
-    for i in range(len(goals)):
-        goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
-        goalandcheck = goals[i].split("#")
-        goaltxt.insert(END, goalandcheck[0])
-        goaltxt.pack(pady=10)
-        goaltextboxes.append(goaltxt)
-        check_var = ctk.StringVar(value=goalandcheck[1])
-        checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
-        checkbox.pack(pady=10)
-        goalcheckboxes.append(checkbox)
-        goalcheckboxvals.append(check_var)
-        delete_goal_button = ctk.CTkButton(scrollframe, text='Delete Goal', command= lambda i=i: delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons))
-        delete_goal_button.pack(pady=10)
-        delete_goal_buttons.append(delete_goal_button)
+    if goals != '':
+        goals = list(goals.split("$"))
+        scrollframe = ctk.CTkScrollableFrame(goals_win, width=300, height=300)
+        scrollframe.pack()
+        for i in range(len(goals)):
+            goaltxt = ctk.CTkTextbox(scrollframe, height=75, width=200)
+            goalandcheck = goals[i].split("#")
+            goaltxt.insert(END, goalandcheck[0])
+            goaltxt.pack(pady=10)
+            goaltextboxes.append(goaltxt)
+            check_var = ctk.StringVar(value=goalandcheck[1])
+            checkbox = ctk.CTkCheckBox(scrollframe, text='Goal Achieved', variable=check_var, onvalue='True', offvalue='False')
+            checkbox.pack(pady=10)
+            goalcheckboxes.append(checkbox)
+            goalcheckboxvals.append(check_var)
+            delete_goal_button = ctk.CTkButton(scrollframe, text='Delete Goal', command= lambda i=i: delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons))
+            delete_goal_button.pack(pady=10)
+            delete_goal_buttons.append(delete_goal_button)
 
     new_goal_button = ctk.CTkButton(goals_win, text='Add New Goal', command= lambda : add_goal(goaltextboxes, goalcheckboxvals, scrollframe))
     new_goal_button.pack(pady=10)
