@@ -15,49 +15,74 @@ for x in range(0, 600, 200):
     c.create_line(0, x, 600, x, width=2)
 
 playable_box = 4
+finished_boxes = []
 
 colours = ["red", "blue"]
 go = 0
 
 squares = []
 
+def check_win():
+    pass
+    
+
 def check_match(box):
     if c.itemcget(squares[box*9], "fill").strip() == c.itemcget(squares[box*9+1], "fill").strip() == c.itemcget(squares[box*9+2], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9], "fill").strip() == c.itemcget(squares[box*9+3], "fill").strip() == c.itemcget(squares[box*9+6], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9], "fill").strip() == c.itemcget(squares[box*9+4], "fill").strip() == c.itemcget(squares[box*9+8], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9+2], "fill").strip() == c.itemcget(squares[box*9+4], "fill").strip() == c.itemcget(squares[box*9+6], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9+1], "fill").strip() == c.itemcget(squares[box*9+4], "fill").strip() == c.itemcget(squares[box*9+7], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9+3], "fill").strip() == c.itemcget(squares[box*9+4], "fill").strip() == c.itemcget(squares[box*9+5], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9+6], "fill").strip() == c.itemcget(squares[box*9+7], "fill").strip() == c.itemcget(squares[box*9+8], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
     elif c.itemcget(squares[box*9+2], "fill").strip() == c.itemcget(squares[box*9+5], "fill").strip() == c.itemcget(squares[box*9+8], "fill").strip() != "white":
         for i in range(9):
             c.itemconfig(squares[box*9+i], fill=colours[go%2])
+        finished_boxes.append(box)
+        check_win()
 
 def play_square(rect):
     global playable_box, go
     c.itemconfig(rect, fill=colours[go%2], activefill=colours[go%2])
-    check_match(playable_box)
+    if playable_box not in finished_boxes:
+        check_match(playable_box)
     go += 1
     playable_box = squares.index(rect)%9
 
 
 def check_click(rect):
     global playable_box
-    if squares.index(rect)//9 == playable_box:
+    if playable_box in finished_boxes:
+        if c.itemcget(rect, "fill") == "white":
+            play_square(rect)
+    elif squares.index(rect)//9 == playable_box:
         if c.itemcget(rect, "fill") == "white":
             play_square(rect)
 
