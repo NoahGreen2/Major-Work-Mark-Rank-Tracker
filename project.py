@@ -172,7 +172,7 @@ def save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel):
     toplevel.deiconify()
 
 #Function to delete a goal
-def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons):
+def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons, goalcheckboxvals, goals_win, toplevel, subject):
     goaltextboxes[i].destroy()
     goalcheckboxes[i].destroy()
     goaltextboxes.pop(i)
@@ -182,6 +182,8 @@ def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons):
         goalcheckboxes[i].pack(pady=10)
     delete_goal_buttons[i].destroy()
     delete_goal_buttons.pop(i)
+    save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel)
+    open_goals_window(subject, toplevel)
 
 ## BUG - Needs a fix
 ## Cannot delete more than one goal at a time
@@ -219,7 +221,7 @@ def open_goals_window(subject, toplevel):
             checkbox.pack(pady=10)
             goalcheckboxes.append(checkbox)
             goalcheckboxvals.append(check_var)
-            delete_goal_button = ctk.CTkButton(scrollframe, text='Delete Goal', command= lambda i=i: delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons))
+            delete_goal_button = ctk.CTkButton(scrollframe, text='Delete Goal', command= lambda i=i: delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons, goalcheckboxvals, goals_win, toplevel, subject))
             delete_goal_button.pack(pady=10)
             delete_goal_buttons.append(delete_goal_button)
 
