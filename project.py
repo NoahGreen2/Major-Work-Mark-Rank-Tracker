@@ -185,9 +185,6 @@ def delete_goal(i, goaltextboxes, goalcheckboxes, delete_goal_buttons, goalcheck
     save_goals(subject, goaltextboxes, goalcheckboxvals, goals_win, toplevel)
     open_goals_window(subject, toplevel)
 
-## BUG - Needs a fix
-## Cannot delete more than one goal at a time
-
 #Function to open a goals window
 def open_goals_window(subject, toplevel):
     goals_win = ctk.CTkToplevel(toplevel)
