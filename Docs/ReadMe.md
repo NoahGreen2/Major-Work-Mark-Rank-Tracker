@@ -1,4 +1,5 @@
-
+# Mark and Rank Tracker
+    This program is designed as a method for high school students to have a centralised hub for the management and recording of their school marks and ranks. The tracker saves information entered by the user and contains also a goals section and provides graphs of the user's marks and ranks across assessment tasks.
 # Installation Guide:
 You must import the tkinter, customtkinter, pandas and matplotlib modules. Do this using py -m pip install _______ in windows powershell. You must ensure that
 the project.csv file is in the same file path as the project.py file. You must also ensure all the requirements are installed by going to the VS code terminal and typing in py -m pip install -r requirements.text
