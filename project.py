@@ -388,7 +388,7 @@ def set_homepage():
     instructions_button = ctk.CTkButton(homescrollframe, fg_color='yellow', hover_color='lightgoldenrodyellow', text='Instructions', text_color='black', command= lambda : open_instructions())
     instructions_button.pack(pady=10)
 
-# Easter egg - check line 300
+# Easter egg - check line 320
 def run_secret_game():
     import winsound
     import random
